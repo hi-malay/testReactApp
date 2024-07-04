@@ -1,0 +1,14 @@
+.undo-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+.left-counter {
+  display: flex;
+  gap: 10px;
+}
+.right-counter {
+  display: flex;
+  gap: 10px;
+}

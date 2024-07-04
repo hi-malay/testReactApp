@@ -1,0 +1,35 @@
+.steps-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.steps-container .line
+{
+ height: 20px;
+ width: 200px;
+ background-color: beige;
+}
+.steps-container .circle
+{
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  text-align: center;
+  background-color: beige;
+}
+
+.steps-container .circle.done
+{
+ background-color: greenyellow;
+ transition: background-color 0.2s linear;
+}
+
+.steps-container .line.done
+{
+ background-color: greenyellow;
+ transition: width,background-color 0.2s linear;
+ width: 200px;
+}

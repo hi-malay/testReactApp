@@ -1,0 +1,18 @@
+.arrow {
+  font-size: 24px;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  margin: 20px;
+}
+
+.carousel-component {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-slide {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}

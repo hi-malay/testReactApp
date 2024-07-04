@@ -1,0 +1,25 @@
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 50px); /* Creates 8 columns, each 50px wide */
+    grid-template-rows: repeat(8, 50px); /* Creates 8 rows, each 50px high */
+    width: 400px;
+    height: 400px;
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+}
+
+.dark {
+    background-color: #769656; /* Dark green color typical for chess boards */
+}
+
+.light {
+    background-color: #eeeed2; /* Light color typical for chess boards */
+}
+
+.hoverColor
+{
+    background-color: pink;
+}

@@ -1,0 +1,14 @@
+.container-star
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    
+}
+
+.container-star .glowStar
+{
+background-color: orange;
+}

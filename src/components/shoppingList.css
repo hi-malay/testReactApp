@@ -1,0 +1,14 @@
+.shopping {
+  position: absolute;
+}
+
+.shopping-list {
+  position: relative;
+  background-color: beige;
+  border: 0.5px solid black;
+  cursor: pointer;
+  width: 100%;
+  height: 100px;
+  z-index: 10;
+  overflow: auto;
+}
