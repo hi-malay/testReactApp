@@ -36,10 +36,31 @@ jobs:
             - **Reviewers:** ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
           `;
 
-          // Output summary and changed files
+          // Build the dynamic changes walkthrough
+          let type = '';
+          let relevantFiles = '';
+
+          if (pr.data.changed_files > 10) {
+            type = 'Other';
+            relevantFiles = 'More than 10 files';
+          } else if (pr.data.changed_files > 5) {
+            type = 'Enhancement';
+            relevantFiles = 'More than 5 files';
+          } else {
+            type = 'Minor';
+            relevantFiles = '5 or fewer files';
+          }
+
+          const changesWalkthrough = `
+            ### Changes Walkthrough
+            | TYPE         | Relevant Files |
+            |--------------|----------------|
+            | ${type}      | ${relevantFiles}  |
+          `;
+
           return {
-            summary: summary,
-            changedFiles: pr.data.changed_files
+            summary,
+            changesWalkthrough,
           };
 
     - name: Update Pull Request Description
@@ -54,23 +75,7 @@ jobs:
 
           const existingDescription = pr.data.body || '';
           const summary = '${{ steps.pr-details.outputs.summary }}';
-          const changedFiles = parseInt('${{ steps.pr-details.outputs.changedFiles }}', 10);
-
-          // Determine file type based on number of changed files
-          let type = 'Other';
-          if (changedFiles > 10) {
-            type = 'Other';
-          } else if (changedFiles > 5) {
-            type = 'Enhancement';
-          }
-
-          const changesWalkthrough = `
-            ### Changes Walkthrough
-            | TYPE         | Relevant Files |
-            |--------------|----------------|
-            | Enhancement  | > 5 files      |
-            | Other        | > 10 files     |
-          `;
+          const changesWalkthrough = '${{ steps.pr-details.outputs.changesWalkthrough }}';
 
           const newDescription = `
             ${existingDescription}
