@@ -1,0 +1,100 @@
+name: Update Pull Request Description with Summary
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  packages: read
+  checks: write
+  pull-requests: write
+  contents: write 
+
+jobs:
+  update-description:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get Pull Request Details
+      id: pr-details
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          // Extract pull request details
+          const summary = `
+            ### Pull Request Summary
+            - **Title:** ${pr.data.title}
+            - **Description:** ${pr.data.body || 'No description provided'}
+            - **Changed Files:** ${pr.data.changed_files}
+            - **Commits:** ${pr.data.commits}
+            - **Reviewers:** ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
+          `;
+
+          // Build the dynamic changes walkthrough
+          let type = '';
+          let relevantFiles = '';
+
+          if (pr.data.changed_files > 10) {
+            type = 'Other';
+            relevantFiles = 'More than 10 files';
+          } else if (pr.data.changed_files > 5) {
+            type = 'Enhancement';
+            relevantFiles = 'More than 5 files';
+          } else {
+            type = 'Minor';
+            relevantFiles = '5 or fewer files';
+          }
+
+          const changesWalkthrough = `
+            ### Changes Walkthrough
+            | TYPE         | Relevant Files |
+            |--------------|----------------|
+            | ${type}      | ${relevantFiles}  |
+          `;
+
+          return {
+            summary,
+            changesWalkthrough,
+          };
+
+    - name: Update Pull Request Description
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const existingDescription = pr.data.body || '';
+          const summary = '${{ steps.pr-details.outputs.summary }}';
+          const changesWalkthrough = '${{ steps.pr-details.outputs.changesWalkthrough }}';
+
+          const newDescription = `
+            ${existingDescription}
+            
+            ${summary}
+            
+            ${changesWalkthrough}
+          `;
+
+          await github.rest.pulls.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            body: newDescription,
+          });
+
+    - name: Poll for Description Update
+      run: |
+        sleep 10
+        curl -H "Accept: application/vnd.github.v3+json" \
+             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+             https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
