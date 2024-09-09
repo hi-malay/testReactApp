@@ -26,19 +26,20 @@ jobs:
             pull_number: context.issue.number,
           });
 
+          // Extract pull request details
           const summary = `
             ### Pull Request Summary
             - **Title:** ${pr.data.title}
             - **Description:** ${pr.data.body || 'No description provided'}
-            - **Changed Files:**
-              ${pr.data.changed_files} files changed
-            - **Commits:**
-              ${pr.data.commits} commits
-            - **Reviewers:**
-              ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
+            - **Changed Files:** ${pr.data.changed_files}
+            - **Commits:** ${pr.data.commits}
+            - **Reviewers:** ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
           `;
-          
-          return summary;
+
+          return {
+            summary,
+            changedFiles: pr.data.changed_files
+          };
 
     - name: Update Pull Request Description
       uses: actions/github-script@v6
@@ -51,19 +52,31 @@ jobs:
           });
 
           const existingDescription = pr.data.body || '';
-          const summary = `
-            ### Pull Request Summary
-            - **Title:** ${pr.data.title}
-            - **Description:** ${pr.data.body || 'No description provided'}
-            - **Changed Files:**
-              ${pr.data.changed_files} files changed
-            - **Commits:**
-              ${pr.data.commits} commits
-            - **Reviewers:**
-              ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
+          const { summary, changedFiles } = steps['pr-details'].outputs;
+          
+          // Determine file type based on number of changed files
+          let type = 'Other';
+          if (changedFiles > 10) {
+            type = 'Other';
+          } else if (changedFiles > 5) {
+            type = 'Enhancement';
+          }
+
+          const changesWalkthrough = `
+            ### Changes Walkthrough
+            | TYPE         | Relevant Files |
+            |--------------|----------------|
+            | Enhancement  | > 5 files      |
+            | Other        | > 10 files     |
           `;
 
-          const newDescription = existingDescription + '\n\n' + summary;
+          const newDescription = `
+            ${existingDescription}
+            
+            ${summary}
+            
+            ${changesWalkthrough}
+          `;
 
           await github.rest.pulls.update({
             owner: context.repo.owner,
@@ -71,22 +84,7 @@ jobs:
             pull_number: context.issue.number,
             body: newDescription,
           });
-          
-    - name: Labeling new issue
-      uses: actions/github-script@v6
-      jobs:
-        build:
-          runs-on: ubuntu-latest
-          steps:
-            - uses: actions/checkout@v4
-              with:
-                sparse-checkout: |
-                  .github/workflows/auto-label.json5
-                sparse-checkout-cone-mode: false
-            - uses: Renato66/auto-label@v3
-              with:
-                repo-token: ${{ secrets.GITHUB_TOKEN }}
-      
+
     - name: Poll for Description Update
       run: |
         sleep 10
