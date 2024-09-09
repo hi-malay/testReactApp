@@ -1,0 +1,67 @@
+name: Update Pull Request Description with Summary
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  update-description:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get Pull Request Details
+      id: pr-details
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const summary = `
+            ### Pull Request Summary
+            - **Title:** ${pr.data.title}
+            - **Description:** ${pr.data.body || 'No description provided'}
+            - **Changed Files:**
+              ${pr.data.changed_files} files changed
+            - **Commits:**
+              ${pr.data.commits} commits
+            - **Reviewers:**
+              ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
+          `;
+          
+          return summary;
+
+    - name: Update Pull Request Description
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const existingDescription = pr.data.body || '';
+          const summary = `
+            ### Pull Request Summary
+            - **Title:** ${pr.data.title}
+            - **Description:** ${pr.data.body || 'No description provided'}
+            - **Changed Files:**
+              ${pr.data.changed_files} files changed
+            - **Commits:**
+              ${pr.data.commits} commits
+            - **Reviewers:**
+              ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
+          `;
+
+          const newDescription = existingDescription + '\n\n' + summary;
+
+          await github.rest.pulls.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            body: newDescription,
+          });
