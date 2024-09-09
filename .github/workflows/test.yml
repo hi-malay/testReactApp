@@ -71,3 +71,10 @@ jobs:
             pull_number: context.issue.number,
             body: newDescription,
           });
+      
+    - name: Poll for Description Update
+      run: |
+        sleep 10
+        curl -H "Accept: application/vnd.github.v3+json" \
+             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+             https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
