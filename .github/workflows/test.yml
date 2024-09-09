@@ -4,14 +4,15 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+permissions:
+  packages: read
+  checks: write
+  pull-requests: write
+  contents: write 
+
 jobs:
   update-description:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      issues: write
-      pulls: write
 
     steps:
     - name: Get Pull Request Details
