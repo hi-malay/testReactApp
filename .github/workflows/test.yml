@@ -36,8 +36,9 @@ jobs:
             - **Reviewers:** ${pr.data.requested_reviewers.map(reviewer => reviewer.login).join(', ') || 'No reviewers assigned'}
           `;
 
+          // Output summary and changed files
           return {
-            summary,
+            summary: summary,
             changedFiles: pr.data.changed_files
           };
 
@@ -52,8 +53,9 @@ jobs:
           });
 
           const existingDescription = pr.data.body || '';
-          const { summary, changedFiles } = steps['pr-details'].outputs;
-          
+          const summary = '${{ steps.pr-details.outputs.summary }}';
+          const changedFiles = parseInt('${{ steps.pr-details.outputs.changedFiles }}', 10);
+
           // Determine file type based on number of changed files
           let type = 'Other';
           if (changedFiles > 10) {
