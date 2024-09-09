@@ -73,6 +73,7 @@ jobs:
           });
           
     - name: Labeling new issue
+      uses: actions/github-script@v6
       on:
         issues:
           types: ['opened']
